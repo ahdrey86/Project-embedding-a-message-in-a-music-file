@@ -1,0 +1,7 @@
+echo "# Проект-встраивание-сообщения-в-музыкальный-файл" >> README.md 
+git init
+git add README.md 
+git commit -m "первая фиксация"
+git branch -M main
+git remote add origin https://github.com/ahdrey86/Project-embedding-a-message-in-a-music-file.git
+git push -u origin main
