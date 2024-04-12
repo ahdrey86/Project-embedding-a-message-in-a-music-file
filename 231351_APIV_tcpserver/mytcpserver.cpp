@@ -1,5 +1,17 @@
+// mytcpserver.cpp
+
 #include "mytcpserver.h"
+#include "database_manager.h"
 #include <QDebug>
+
+MyTcpServer* MyTcpServer::instance = nullptr;
+
+MyTcpServer* MyTcpServer::getInstance() {
+    if (!instance) {
+        instance = new MyTcpServer();
+    }
+    return instance;
+}
 
 MyTcpServer::MyTcpServer(QObject *parent) : QObject(parent), m_server(new QTcpServer(this))
 {
@@ -55,16 +67,29 @@ void MyTcpServer::readyRead()
         QByteArray requestData = clientSocket->readAll();
         qDebug() << "Получены данные от клиента:" << requestData;
 
-        // Временное решение для входа
-        QString expectedData = "LP:user;12345";
-        QString answer;
-        if (requestData == expectedData.toUtf8()) {
-            answer = "yes";
-        } else {
-            answer = "no";
-        }
-        qDebug() << answer;
-        clientSocket->write(answer.toUtf8());
-    }
+        QString request = QString::fromUtf8(requestData);
+        bool answer;
 
+        DatabaseManager *dbManager = DatabaseManager::getInstance();
+        if (request.startsWith("R_ELP:")) {
+            answer = dbManager->registerUser(request.mid(6));
+            if (answer) {
+                clientSocket->write("REG_RESPONSE:Success");
+            } else {
+                clientSocket->write("REG_RESPONSE:Fail");
+            }
+
+        } else if (request.startsWith("L_LP:")){
+            answer = dbManager->authenticateUser(request.mid(5));
+            if (answer) {
+                clientSocket->write("LOGIN_RESPONSE:Success");
+            } else {
+                clientSocket->write("LOGIN_RESPONSE:Fail");
+            }
+
+        } else {
+            qDebug() << "Не распознан тип обращения к серверу";
+        }
+
+    }
 }

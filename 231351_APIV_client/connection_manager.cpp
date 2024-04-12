@@ -1,4 +1,5 @@
 #include "connection_manager.h"
+#include <QCryptographicHash>
 
 ConnectionManager* ConnectionManager::instance = nullptr;
 
@@ -12,7 +13,9 @@ ConnectionManager* ConnectionManager::getInstance() {
 ConnectionManager::ConnectionManager(QObject *parent) : QObject(parent)
 {
     tcpSocket = new QTcpSocket(this);
-    connect(tcpSocket, &QTcpSocket::readyRead, this, &ConnectionManager::processServerResponse);
+    connect(tcpSocket, &QTcpSocket::readyRead, this, [=]() {
+        this->processServerResponse("S");
+    });
 }
 
 bool ConnectionManager::connectToServer(const QString& ipAddress, int port)
@@ -30,38 +33,67 @@ void ConnectionManager::sendDataToServer(const QString& data)
 
 void ConnectionManager::sendLoginToServer(const QString& login, const QString& password)
 {
+    //Хэширование пароля
+    QByteArray passwordHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    QString hashedPassword = QString::fromLatin1(passwordHash.toHex());
     // Отправка логина и пароля на сервер
-    QString data = "LP:" + login + ";" + password;
+    QString data = "L_LP:" + login + ";" + hashedPassword;
     if (tcpSocket->state() == QAbstractSocket::ConnectedState) {
         tcpSocket->write(data.toUtf8());
     }
 }
 
-bool ConnectionManager::receiveLoginResponse()
+void ConnectionManager::sendRegToServer(const QString& eMail, const QString& login, const QString& password)
+{
+    //Хэширование пароля
+    QByteArray passwordHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    QString hashedPassword = QString::fromLatin1(passwordHash.toHex());
+    // Отправка почты, логина и пароля на сервер
+    QString data = "R_ELP:" + eMail + ";" + login + ";" + hashedPassword;
+    if (tcpSocket->state() == QAbstractSocket::ConnectedState) {
+        tcpSocket->write(data.toUtf8());
+    }
+}
+
+QString ConnectionManager::processServerResponse(const QString& who)
 {
     // Ждем появления данных в сокете
-    if (!tcpSocket->waitForReadyRead()) {
-        // Если данные не появились в течение таймаута, возвращаем false
+    if (!tcpSocket->waitForReadyRead(5000)) {
+        // Если данные не появились в течение таймаута, выводим сообщение об ошибке и выходим
         qDebug() << "Timeout waiting for data.";
-        return false;
+        return "Timeout";
     }
 
     QByteArray responseData = tcpSocket->readAll();
 
-    //Временное решение
+    // Преобразуем ответ в строку
     QString response = QString::fromUtf8(responseData);
 
-    if (response.trimmed() == "yes") {
-        return true;
-    } else if (response.trimmed() == "no") {
-        return false;
+    // Обработка ответа в зависимости от его содержания
+    if (response.startsWith("LOGIN_RESPONSE:") && who.trimmed() == "L") {
+        return response.mid(15);
+    } else if (response.startsWith("REG_RESPONSE:") && who.trimmed() == "R") {
+        return response.mid(15);
     } else {
-        return false;
+        return "Missed";
     }
 }
 
-void ConnectionManager::processServerResponse()
+bool ConnectionManager::receiveLoginResponse()
 {
-    //QByteArray responseData = tcpSocket->readAll();
-    // Обработка ответа от сервера
+    QString response = processServerResponse("L");
+    if (response.trimmed() == "Success")
+        return true;
+    else
+        return false;
 }
+
+bool ConnectionManager::receiveRegResponse() {
+    QString response = processServerResponse("R");
+    if (response.trimmed() == "Success")
+        return true;
+    else
+        return false;
+}
+
+

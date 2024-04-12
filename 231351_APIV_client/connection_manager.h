@@ -12,10 +12,12 @@ public:
     bool connectToServer(const QString& ipAddress, int port);
     void sendDataToServer(const QString& data);
     void sendLoginToServer(const QString& login, const QString& password);
+    void sendRegToServer(const QString& eMail, const QString& login, const QString& password);
     bool receiveLoginResponse();
+    bool receiveRegResponse();
 
 private slots:
-    void processServerResponse();
+    QString processServerResponse(const QString& who);
 
 private:
     explicit ConnectionManager(QObject *parent = nullptr);

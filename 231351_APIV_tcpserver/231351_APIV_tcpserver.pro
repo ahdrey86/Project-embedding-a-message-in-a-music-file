@@ -12,10 +12,12 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    database_manager.cpp \
     main.cpp \
     mytcpserver.cpp
 
 HEADERS += \
+    database_manager.h \
     mytcpserver.h
 
 FORMS +=

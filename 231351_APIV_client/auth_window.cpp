@@ -53,6 +53,6 @@ void auth_window::attemptLogin()
 }
 
 void auth_window::switchToRegister() {
-    QMessageBox::critical(this, tr("Упс!"), tr("Эта страница еще в разработке!"));
-    // emit switchRegisterWindow();
+    //QMessageBox::critical(this, tr("Упс!"), tr("Эта страница еще в разработке!"));
+    emit switchRegisterWindow();
 }

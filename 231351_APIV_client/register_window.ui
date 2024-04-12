@@ -79,13 +79,16 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QLabel" name="label">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="font">
         <font>
          <pointsize>10</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Пройдите проверку на робота. Введите число, указанное ниже с помощью ползунка:</string>
+        <string>Проверка на робота еще не реализована</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -94,6 +97,9 @@
      </item>
      <item>
       <widget class="QLabel" name="label_numberFromServer">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="font">
         <font>
          <pointsize>19</pointsize>
@@ -118,8 +124,11 @@
      </item>
      <item>
       <widget class="QSlider" name="horizontalSlider">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="maximum">
-        <number>10</number>
+        <number>30</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -128,6 +137,9 @@
      </item>
      <item>
       <widget class="QLabel" name="label_numberToCheck">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="font">
         <font>
          <pointsize>20</pointsize>
